@@ -211,6 +211,6 @@ async function ExerciseLibrary({
   }
   const options = catalog
     .filter((e) => !alreadyAdded.includes(e.id))
-    .map((e) => ({ id: e.id, name: e.name, category: e.category }));
+    .map((e) => ({ id: e.id, name: e.name, category: e.category, image: e.image }));
   return <ExercisePicker workoutId={workoutId} options={options} />;
 }
