@@ -41,7 +41,7 @@ export function AddSetForm(props: {
             placeholder="Bodyweight"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
-            className={`${input} mt-1 text-lg tabular-nums`}
+            className={`${input} mt-1 text-lg normal-case tracking-normal tabular-nums`}
           />
         </label>
         <label className={`${label} w-24`}>
@@ -52,7 +52,7 @@ export function AddSetForm(props: {
             required
             value={reps}
             onChange={(e) => setReps(e.target.value)}
-            className={`${input} mt-1 text-lg tabular-nums`}
+            className={`${input} mt-1 text-lg normal-case tracking-normal tabular-nums`}
           />
         </label>
         <button disabled={pending} className={`${primary} px-5`}>
