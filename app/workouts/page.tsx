@@ -36,6 +36,7 @@ async function WorkoutHistory() {
     .order("created_at", { ascending: false })
     .limit(50);
 
+  if (error) console.error("Loading workouts failed:", error);
   if (error) return <p className="text-red-600">Couldn&apos;t load your workouts. Refresh to try again.</p>;
   if (!workouts.length) {
     return (

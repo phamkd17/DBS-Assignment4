@@ -26,7 +26,10 @@ export async function startWorkout(formData: FormData) {
     .insert({ name: "Workout", ...(DATE.test(localDate) && { performed_on: localDate }) })
     .select("id")
     .single();
-  if (error) throw new Error("Could not start the workout. Please try again.");
+  if (error) {
+    console.error("startWorkout failed:", error);
+    throw new Error("Could not start the workout. Please try again.");
+  }
   redirect(`/workouts/${data.id}`);
 }
 
@@ -57,7 +60,10 @@ export async function addExercise(workoutId: string, exerciseId: number): Promis
     .from("workouts")
     .update({ exercises: [...planned, snapshot] })
     .eq("id", workoutId);
-  if (error) return { error: "Could not add the exercise. Please try again." };
+  if (error) {
+    console.error("addExercise failed:", error);
+    return { error: "Could not add the exercise. Please try again." };
+  }
   refresh();
   return {};
 }
@@ -92,13 +98,17 @@ export async function addSet(_prev: SetFormState, formData: FormData): Promise<S
     weight_lb: weight === null ? null : Math.round(weight * 10) / 10,
     reps,
   });
-  if (error) return { error: "Could not save the set. Please try again." };
+  if (error) {
+    console.error("addSet failed:", error);
+    return { error: "Could not save the set. Please try again." };
+  }
   refresh();
   return { savedAt: Date.now() };
 }
 
 export async function deleteSet(setId: string) {
   const supabase = await signedInClient();
-  await supabase.from("workout_sets").delete().eq("id", setId);
+  const { error } = await supabase.from("workout_sets").delete().eq("id", setId);
+  if (error) console.error("deleteSet failed:", error);
   refresh();
 }
