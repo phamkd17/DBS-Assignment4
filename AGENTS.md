@@ -50,6 +50,7 @@ wger API: exercise catalog, never stored wholesale; snapshots copied into rows
 | name | text not null | "Push Day", or "Workout" if improvised |
 | performed_on | date not null | default today |
 | notes | text | optional |
+| exercises | jsonb not null | planned exercises, same shape as `templates.exercises`; cards show before any set is logged |
 | created_at | timestamptz | default `now()` |
 
 ### `workout_sets`: one row per set
