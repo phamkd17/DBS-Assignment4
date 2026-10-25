@@ -202,3 +202,73 @@ export async function startFromTemplate(
   }
   redirect(`/workouts/${data.id}`);
 }
+
+// Only exercises with no logged sets can be removed, so logged work is never lost.
+export async function removeExercise(
+  workoutId: string,
+  exerciseId: number,
+): Promise<{ error?: string }> {
+  const supabase = await signedInClient();
+  const [{ data: workout }, { count }] = await Promise.all([
+    supabase
+      .from("workouts")
+      .select("exercises")
+      .eq("id", workoutId)
+      .maybeSingle(),
+    supabase
+      .from("workout_sets")
+      .select("id", { count: "exact", head: true })
+      .eq("workout_id", workoutId)
+      .eq("exercise_id", exerciseId),
+  ]);
+  if (!workout) return { error: "Workout not found." };
+  if (count) return { error: "Delete this exercise's sets first." };
+
+  const exercises = (workout.exercises as PlannedExercise[]).filter(
+    (e) => e.exercise_id !== exerciseId,
+  );
+  const { error } = await supabase
+    .from("workouts")
+    .update({ exercises })
+    .eq("id", workoutId);
+  if (error) {
+    console.error("removeExercise failed:", error);
+    return { error: "Could not remove the exercise. Please try again." };
+  }
+  refresh();
+  return {};
+}
+
+export type SaveTemplateState = {
+  error?: string;
+  savedName?: string;
+  savedAt?: number;
+};
+
+export async function saveAsTemplate(
+  _prev: SaveTemplateState,
+  formData: FormData,
+): Promise<SaveTemplateState> {
+  const supabase = await signedInClient();
+  const workoutId = String(formData.get("workout_id"));
+  const name = String(formData.get("name") ?? "").trim();
+  if (name.length < 1 || name.length > 80)
+    return { error: "Give the template a name (up to 80 characters)." };
+
+  const { data: workout } = await supabase
+    .from("workouts")
+    .select("exercises")
+    .eq("id", workoutId)
+    .maybeSingle();
+  const exercises = (workout?.exercises ?? []) as PlannedExercise[];
+  if (!exercises.length) return { error: "Add at least one exercise first." };
+
+  const { error } = await supabase
+    .from("templates")
+    .insert({ name, exercises });
+  if (error) {
+    console.error("saveAsTemplate failed:", error);
+    return { error: "Could not save the template. Please try again." };
+  }
+  return { savedName: name, savedAt: Date.now() };
+}

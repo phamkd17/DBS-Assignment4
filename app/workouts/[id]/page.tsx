@@ -10,6 +10,7 @@ import { AddSetForm, DeleteSetButton } from "./SetControls";
 import { ExercisePicker } from "./ExercisePicker";
 import { DeleteEmptyWorkoutButton } from "../DeleteEmptyWorkoutButton";
 import { ZoomableThumb } from "@/components/ExerciseImage";
+import { RemoveExerciseButton, SaveAsTemplate } from "./WorkoutControls";
 
 export default function WorkoutPage({ params }: PageProps<"/workouts/[id]">) {
   return (
@@ -156,6 +157,14 @@ async function Workout({ params }: { params: Promise<{ id: string }> }) {
                 </p>
               </div>
             </div>
+            {done.length === 0 && (
+              <div className="mt-1 flex justify-end">
+                <RemoveExerciseButton
+                  workoutId={workout.id}
+                  exerciseId={exercise.exercise_id}
+                />
+              </div>
+            )}
 
             {done.length > 0 && (
               <ol className="mt-3 space-y-1">
@@ -196,6 +205,10 @@ async function Workout({ params }: { params: Promise<{ id: string }> }) {
       >
         <ExerciseLibrary workoutId={workout.id} alreadyAdded={exerciseIds} />
       </Suspense>
+
+      {planned.length > 0 && (
+        <SaveAsTemplate workoutId={workout.id} defaultName={workout.name} />
+      )}
     </>
   );
 }
