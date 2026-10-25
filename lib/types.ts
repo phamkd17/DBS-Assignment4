@@ -4,6 +4,7 @@ export type PlannedExercise = {
   name: string;
   category: string;
   muscles: string[];
+  image?: string | null; // wger picture URL; missing on exercises added before pictures were stored
 };
 
 export type LoggedSet = {

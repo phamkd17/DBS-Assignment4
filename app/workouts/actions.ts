@@ -55,6 +55,7 @@ export async function addExercise(workoutId: string, exerciseId: number): Promis
     name: exercise.name,
     category: exercise.category,
     muscles: exercise.muscles,
+    image: exercise.image,
   };
   const { error } = await supabase
     .from("workouts")

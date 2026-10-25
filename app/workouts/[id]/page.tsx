@@ -9,6 +9,7 @@ import type { LoggedSet, PlannedExercise } from "@/lib/types";
 import { AddSetForm, DeleteSetButton } from "./SetControls";
 import { ExercisePicker } from "./ExercisePicker";
 import { DeleteEmptyWorkoutButton } from "../DeleteEmptyWorkoutButton";
+import { ZoomableThumb } from "@/components/ExerciseImage";
 
 export default function WorkoutPage({ params }: PageProps<"/workouts/[id]">) {
   return (
@@ -47,7 +48,7 @@ async function Workout({ params }: { params: Promise<{ id: string }> }) {
     .maybeSingle();
   if (!workout) notFound();
 
-  const planned = workout.exercises as PlannedExercise[];
+  const planned = await withImages(workout.exercises as PlannedExercise[]);
   const exerciseIds = planned.map((e) => e.exercise_id);
 
   const [{ data: sets }, { data: history }] = await Promise.all([
@@ -135,17 +136,26 @@ async function Workout({ params }: { params: Promise<{ id: string }> }) {
             key={exercise.exercise_id}
             className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
           >
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 className="text-lg font-semibold">{exercise.name}</h2>
-              <span className="shrink-0 text-xs uppercase tracking-wide text-zinc-500">
-                {exercise.category}
-              </span>
+            <div className="flex items-start gap-3">
+              <ZoomableThumb
+                name={exercise.name}
+                category={exercise.category}
+                image={exercise.image ?? null}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline justify-between gap-3">
+                  <h2 className="text-lg font-semibold">{exercise.name}</h2>
+                  <span className="shrink-0 text-xs uppercase tracking-wide text-zinc-500">
+                    {exercise.category}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  {last
+                    ? `Last time (${new Date(`${last.date}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" })}): ${last.sets.map(fmt).join(", ")}`
+                    : "First time logging this exercise"}
+                </p>
+              </div>
             </div>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              {last
-                ? `Last time (${new Date(`${last.date}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" })}): ${last.sets.map(fmt).join(", ")}`
-                : "First time logging this exercise"}
-            </p>
 
             {done.length > 0 && (
               <ol className="mt-3 space-y-1">
@@ -211,6 +221,30 @@ async function ExerciseLibrary({
   }
   const options = catalog
     .filter((e) => !alreadyAdded.includes(e.id))
-    .map((e) => ({ id: e.id, name: e.name, category: e.category, image: e.image }));
+    .map((e) => ({
+      id: e.id,
+      name: e.name,
+      category: e.category,
+      image: e.image,
+    }));
   return <ExercisePicker workoutId={workoutId} options={options} />;
+}
+
+// Exercises added before pictures were stored have no `image` field; fill those in from the cached catalog.
+// If wger is unavailable, the cards simply show placeholders.
+async function withImages(planned: PlannedExercise[]) {
+  if (planned.every((e) => e.image !== undefined)) return planned;
+  try {
+    const catalog = await getCatalog();
+    return planned.map((e) =>
+      e.image !== undefined
+        ? e
+        : {
+            ...e,
+            image: catalog.find((c) => c.id === e.exercise_id)?.image ?? null,
+          },
+    );
+  } catch {
+    return planned;
+  }
 }

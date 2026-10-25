@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { addExercise } from "../actions";
 import { rankByName } from "@/lib/search";
+import { ExerciseThumb, ImagePreview } from "@/components/ExerciseImage";
 
 type Option = {
   id: number;
@@ -152,105 +153,21 @@ export function ExercisePicker({
           ))}
         </ul>
       )}
-      {preview && (
+      {preview?.image && (
         <ImagePreview
-          option={preview}
-          pending={pending}
-          onAdd={() => pick(preview.id)}
+          {...preview}
+          image={preview.image}
           onClose={() => setPreview(null)}
-        />
-      )}
-    </section>
-  );
-}
-
-// About a third of wger exercises have a picture. The rest get a same-sized placeholder so names stay aligned.
-function ExerciseThumb({
-  name,
-  category,
-  image,
-}: {
-  name: string;
-  category: string;
-  image: string | null;
-}) {
-  const box =
-    "size-12 shrink-0 rounded-lg border border-zinc-200 bg-white dark:border-zinc-800";
-  if (!image) {
-    return (
-      <span
-        aria-hidden
-        className={`${box} flex items-center justify-center text-lg font-semibold text-zinc-400 dark:bg-zinc-900`}
-      >
-        {category[0]}
-      </span>
-    );
-  }
-  // Plain <img>: wger's images are already small, and lazy loading only fetches the rows you scroll to.
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={image}
-      alt={name}
-      loading="lazy"
-      decoding="async"
-      className={`${box} object-contain p-0.5`}
-    />
-  );
-}
-
-// A native <dialog> gives us focus trapping, Esc to close, and a dimmed backdrop for free.
-function ImagePreview({
-  option,
-  pending,
-  onAdd,
-  onClose,
-}: {
-  option: Option;
-  pending: boolean;
-  onAdd: () => void;
-  onClose: () => void;
-}) {
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    ref.current?.showModal();
-  }, []);
-
-  return (
-    <dialog
-      ref={ref}
-      onClose={onClose}
-      onClick={(e) => e.target === ref.current && onClose()}
-      aria-label={option.name}
-      className="m-auto w-[min(92vw,28rem)] rounded-2xl bg-white p-0 text-zinc-900 backdrop:bg-black/60 dark:bg-zinc-950 dark:text-zinc-100"
-    >
-      <div className="flex flex-col gap-4 p-4">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={option.image!}
-          alt={option.name}
-          className="max-h-[60vh] w-full rounded-xl bg-white object-contain"
-        />
-        <div>
-          <h3 className="text-lg font-semibold">{option.name}</h3>
-          <p className="text-sm text-zinc-500">{option.category}</p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={onClose}
-            className="flex-1 rounded-lg border border-zinc-300 px-4 py-3 font-medium dark:border-zinc-700"
-          >
-            Back
-          </button>
+        >
           <button
             disabled={pending}
-            onClick={onAdd}
+            onClick={() => pick(preview.id)}
             className="flex-1 rounded-lg bg-zinc-900 px-4 py-3 font-semibold text-white disabled:opacity-60 dark:bg-white dark:text-zinc-900"
           >
             {pending ? "Adding…" : "Add to workout"}
           </button>
-        </div>
-      </div>
-    </dialog>
+        </ImagePreview>
+      )}
+    </section>
   );
 }
