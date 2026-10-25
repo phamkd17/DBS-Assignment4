@@ -8,6 +8,7 @@ export type ProgressSet = {
   weight_lb: number | null;
   reps: number;
   performed_on: string;
+  created_at: string;
 };
 
 export type Session = {
@@ -16,6 +17,7 @@ export type Session = {
   weight: number | null;
   reps: number;
   value: number;
+  loggedAt: string; // first set's timestamp, to order two sessions on the same day
 };
 
 export type ExerciseProgress = {
@@ -69,10 +71,17 @@ export function buildProgress(rows: ProgressSet[]): ExerciseProgress[] {
         weight,
         reps: best.reps,
         value: mode === "weight" ? weight! : best.reps,
+        loggedAt: ws.reduce(
+          (t, s) => (s.created_at < t ? s.created_at : t),
+          ws[0].created_at,
+        ),
       });
     }
     if (!sessions.length) continue;
-    sessions.sort((a, b) => a.date.localeCompare(b.date));
+    sessions.sort(
+      (a, b) =>
+        a.date.localeCompare(b.date) || a.loggedAt.localeCompare(b.loggedAt),
+    );
     result.push({
       exerciseId,
       name: sets[0].exercise_name,
@@ -82,8 +91,10 @@ export function buildProgress(rows: ProgressSet[]): ExerciseProgress[] {
     });
   }
   // Most recently trained first.
-  return result.sort((a, b) =>
-    b.sessions.at(-1)!.date.localeCompare(a.sessions.at(-1)!.date),
+  return result.sort(
+    (a, b) =>
+      b.sessions.at(-1)!.date.localeCompare(a.sessions.at(-1)!.date) ||
+      b.sessions.at(-1)!.loggedAt.localeCompare(a.sessions.at(-1)!.loggedAt),
   );
 }
 

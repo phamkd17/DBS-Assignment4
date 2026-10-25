@@ -148,7 +148,7 @@ async function AllExercises() {
   const { data, error } = await supabase
     .from("workout_sets")
     .select(
-      "exercise_id, exercise_name, category, workout_id, weight_lb, reps, workouts!inner(performed_on)",
+      "exercise_id, exercise_name, category, workout_id, weight_lb, reps, created_at, workouts!inner(performed_on)",
     )
     .limit(5000);
   if (error) {
