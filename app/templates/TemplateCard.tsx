@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  card,
+  danger,
+  errorText,
+  focusRing,
+  input,
+  label,
+  primary,
+  quiet,
+} from "@/components/styles";
 import { useState, useTransition } from "react";
 import { ExerciseThumb } from "@/components/ExerciseImage";
 import type { PlannedExercise } from "@/lib/types";
@@ -32,7 +42,7 @@ export function TemplateCard({
     });
 
   return (
-    <section className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+    <section className={`${card} p-4`}>
       {editing ? (
         <form
           onSubmit={(e) => {
@@ -50,42 +60,36 @@ export function TemplateCard({
             onChange={(e) => setDraft(e.target.value)}
             maxLength={80}
             autoFocus
-            className="min-w-0 flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-950"
+            className={`${input} min-w-0 flex-1`}
           />
-          <button
-            disabled={pending}
-            className="rounded-lg bg-zinc-900 px-3 font-semibold text-white dark:bg-white dark:text-zinc-900"
-          >
+          <button disabled={pending} className={`${primary} px-4`}>
             Save
           </button>
           <button
             type="button"
             onClick={() => (setEditing(false), setDraft(name))}
-            className="px-2 text-sm text-zinc-500"
+            className={`${quiet} px-1`}
           >
             Cancel
           </button>
         </form>
       ) : (
         <div className="flex items-baseline justify-between gap-3">
-          <h2 className="text-lg font-semibold">{name}</h2>
-          <button
-            onClick={() => setEditing(true)}
-            className="text-sm text-zinc-500 underline"
-          >
+          <h2 className="font-ls-serif text-[28px] leading-tight">{name}</h2>
+          <button onClick={() => setEditing(true)} className={quiet}>
             Rename
           </button>
         </div>
       )}
 
       {exercises.length === 0 ? (
-        <p className="mt-3 text-sm text-zinc-500">
+        <p className="mt-3 text-sm text-ls-muted">
           No exercises left in this template.
         </p>
       ) : (
-        <ul className="mt-3 space-y-2">
+        <ul className="mt-3 divide-y divide-ls-border border-y border-ls-border">
           {exercises.map((e) => (
-            <li key={e.exercise_id} className="flex items-center gap-3">
+            <li key={e.exercise_id} className="flex items-center gap-3 py-2">
               <ExerciseThumb
                 name={e.name}
                 category={e.category}
@@ -93,9 +97,7 @@ export function TemplateCard({
               />
               <span className="flex-1">
                 {e.name}
-                <span className="block text-xs text-zinc-500">
-                  {e.category}
-                </span>
+                <span className={`${label} block`}>{e.category}</span>
               </span>
               <button
                 disabled={pending}
@@ -103,7 +105,7 @@ export function TemplateCard({
                   run(() => removeTemplateExercise(id, e.exercise_id))
                 }
                 aria-label={`Remove ${e.name} from ${name}`}
-                className="px-2 text-zinc-400 hover:text-red-600 disabled:opacity-50"
+                className={`grid size-9 cursor-pointer place-items-center text-ls-muted transition-colors hover:bg-ls-ink/[0.06] hover:text-ls-error disabled:opacity-50 ${focusRing}`}
               >
                 ✕
               </button>
@@ -116,31 +118,25 @@ export function TemplateCard({
         {confirmDelete ? (
           <span className="flex items-center gap-3 text-sm">
             Delete &ldquo;{name}&rdquo;?
-            <button
-              onClick={() => setConfirmDelete(false)}
-              className="text-zinc-500"
-            >
+            <button onClick={() => setConfirmDelete(false)} className={quiet}>
               Keep it
             </button>
             <button
               disabled={pending}
               onClick={() => run(() => deleteTemplate(id))}
-              className="font-semibold text-red-600 disabled:opacity-50"
+              className={`${danger} font-medium`}
             >
               {pending ? "Deleting…" : "Delete"}
             </button>
           </span>
         ) : (
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="text-sm text-red-600"
-          >
+          <button onClick={() => setConfirmDelete(true)} className={danger}>
             Delete template
           </button>
         )}
       </div>
       {error && (
-        <p role="alert" className="mt-2 text-sm text-red-600">
+        <p role="alert" className={`${errorText} mt-2`}>
           {error}
         </p>
       )}
