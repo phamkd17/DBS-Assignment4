@@ -92,8 +92,8 @@ No warm-up flag and no RPE: every logged set counts toward weekly volume.
 | Log a workout | insert `workouts` + `workout_sets` |
 | "Last time" for an exercise | user's latest `workout_sets` with that `exercise_id` |
 | Weekly volume | count this week's (Mon–Sun) `workout_sets` by `category`; tap a category to count by `muscles` |
-| Start a template | read `templates`, create a `workouts` row |
-| Starter templates | constant in code (Push, Pull, Legs, Upper, Lower), copied into `templates` on first sign-in, then editable |
+| Start a template | read `templates`, create a `workouts` row with its name and exercises |
+| Starter templates | `lib/starters.ts` (Push Day, Pull Day, Leg Day, Upper Body, Lower Body), copied into `templates` once per user (claimed via `user_settings.starters_added`), then editable on `/templates` |
 | Surprise me | wger `exerciseinfo` filtered by category and the user's `equipment_ids`, pick one at random |
 
 ## wger API notes
