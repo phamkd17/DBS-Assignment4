@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { addExercise } from "../actions";
 import { rankByName } from "@/lib/search";
 
@@ -33,6 +33,7 @@ export function ExercisePicker({
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<Option | null>(null);
   const [pending, startTransition] = useTransition();
 
   const matches = useMemo(() => {
@@ -57,6 +58,7 @@ export function ExercisePicker({
     setError(null);
     startTransition(async () => {
       const result = await addExercise(workoutId, id);
+      setPreview(null);
       if (result.error) setError(result.error);
       else {
         setOpen(false);
@@ -114,20 +116,34 @@ export function ExercisePicker({
       ) : (
         <ul className="mt-3 max-h-80 divide-y divide-zinc-100 overflow-y-auto dark:divide-zinc-900">
           {matches.map((o) => (
-            <li key={o.id}>
-              <button
-                disabled={pending}
-                onClick={() => pick(o.id)}
-                className="flex w-full items-center justify-between gap-3 px-1 py-2 text-left disabled:opacity-50"
-              >
-                <span className="flex items-center gap-3">
+            <li key={o.id} className="flex items-center gap-3 px-1 py-2">
+              {/* The picture opens a bigger preview; the name adds the exercise. */}
+              {o.image ? (
+                <button
+                  type="button"
+                  onClick={() => setPreview(o)}
+                  aria-label={`Show a bigger picture of ${o.name}`}
+                  className="shrink-0"
+                >
                   <ExerciseThumb
                     name={o.name}
                     category={o.category}
                     image={o.image}
                   />
-                  <span>{o.name}</span>
-                </span>
+                </button>
+              ) : (
+                <ExerciseThumb
+                  name={o.name}
+                  category={o.category}
+                  image={null}
+                />
+              )}
+              <button
+                disabled={pending}
+                onClick={() => pick(o.id)}
+                className="flex flex-1 items-center justify-between gap-3 text-left disabled:opacity-50"
+              >
+                <span>{o.name}</span>
                 <span className="shrink-0 text-xs text-zinc-500">
                   {o.category}
                 </span>
@@ -135,6 +151,14 @@ export function ExercisePicker({
             </li>
           ))}
         </ul>
+      )}
+      {preview && (
+        <ImagePreview
+          option={preview}
+          pending={pending}
+          onAdd={() => pick(preview.id)}
+          onClose={() => setPreview(null)}
+        />
       )}
     </section>
   );
@@ -172,5 +196,61 @@ function ExerciseThumb({
       decoding="async"
       className={`${box} object-contain p-0.5`}
     />
+  );
+}
+
+// A native <dialog> gives us focus trapping, Esc to close, and a dimmed backdrop for free.
+function ImagePreview({
+  option,
+  pending,
+  onAdd,
+  onClose,
+}: {
+  option: Option;
+  pending: boolean;
+  onAdd: () => void;
+  onClose: () => void;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    ref.current?.showModal();
+  }, []);
+
+  return (
+    <dialog
+      ref={ref}
+      onClose={onClose}
+      onClick={(e) => e.target === ref.current && onClose()}
+      aria-label={option.name}
+      className="m-auto w-[min(92vw,28rem)] rounded-2xl bg-white p-0 text-zinc-900 backdrop:bg-black/60 dark:bg-zinc-950 dark:text-zinc-100"
+    >
+      <div className="flex flex-col gap-4 p-4">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={option.image!}
+          alt={option.name}
+          className="max-h-[60vh] w-full rounded-xl bg-white object-contain"
+        />
+        <div>
+          <h3 className="text-lg font-semibold">{option.name}</h3>
+          <p className="text-sm text-zinc-500">{option.category}</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={onClose}
+            className="flex-1 rounded-lg border border-zinc-300 px-4 py-3 font-medium dark:border-zinc-700"
+          >
+            Back
+          </button>
+          <button
+            disabled={pending}
+            onClick={onAdd}
+            className="flex-1 rounded-lg bg-zinc-900 px-4 py-3 font-semibold text-white disabled:opacity-60 dark:bg-white dark:text-zinc-900"
+          >
+            {pending ? "Adding…" : "Add to workout"}
+          </button>
+        </div>
+      </div>
+    </dialog>
   );
 }
