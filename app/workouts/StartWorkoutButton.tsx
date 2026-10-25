@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
+import { label, secondary } from "@/components/styles";
 import { startFromTemplate, startWorkout } from "./actions";
 
 function localDate() {
@@ -13,13 +14,13 @@ function SubmitButton({
   children,
   className,
 }: {
-  children: ReactNode;
+  children: (pending: boolean) => ReactNode;
   className: string;
 }) {
   const { pending } = useFormStatus();
   return (
-    <button disabled={pending} className={`${className} disabled:opacity-60`}>
-      {pending ? "Starting…" : children}
+    <button disabled={pending} className={className}>
+      {children(pending)}
     </button>
   );
 }
@@ -31,7 +32,7 @@ function StartForm({
   className,
 }: {
   action: (formData: FormData) => Promise<void>;
-  children: ReactNode;
+  children: (pending: boolean) => ReactNode;
   className: string;
 }) {
   return (
@@ -51,11 +52,8 @@ function StartForm({
 
 export function StartWorkoutButton() {
   return (
-    <StartForm
-      action={startWorkout}
-      className="w-full rounded-xl border-2 border-dashed border-zinc-300 px-5 py-3 font-semibold text-zinc-600 dark:border-zinc-700 dark:text-zinc-300"
-    >
-      Start an empty workout
+    <StartForm action={startWorkout} className={`${secondary} w-full`}>
+      {(pending) => (pending ? "Starting…" : "Start an empty workout")}
     </StartForm>
   );
 }
@@ -63,21 +61,34 @@ export function StartWorkoutButton() {
 export function StartFromTemplateButton({
   templateId,
   name,
-  count,
+  exercises,
 }: {
   templateId: string;
   name: string;
-  count: number;
+  exercises: string[];
 }) {
   return (
     <StartForm
       action={startFromTemplate.bind(null, templateId)}
-      className="w-full rounded-xl bg-zinc-900 px-4 py-4 text-left text-white dark:bg-white dark:text-zinc-900"
+      className="group flex w-full cursor-pointer items-center justify-between gap-4 px-4 py-4 text-left transition-colors hover:bg-ls-ink/[0.04] active:bg-ls-ink/[0.08] disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-[-2px] focus-visible:outline-ls-ink"
     >
-      <span className="block text-lg font-semibold">{name}</span>
-      <span className="text-sm opacity-70">
-        {count} {count === 1 ? "exercise" : "exercises"}
-      </span>
+      {(pending) => (
+        <>
+          <span className="min-w-0">
+            <span className="block font-ls-serif text-[26px] leading-tight">
+              {name}
+            </span>
+            <span className="block truncate text-sm text-ls-muted">
+              {exercises.join(" · ") || "No exercises"}
+            </span>
+          </span>
+          <span
+            className={`${label} shrink-0 text-ls-accent group-hover:underline`}
+          >
+            {pending ? "Starting…" : "Start →"}
+          </span>
+        </>
+      )}
     </StartForm>
   );
 }

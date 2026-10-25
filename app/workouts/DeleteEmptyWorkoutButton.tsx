@@ -2,9 +2,18 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { danger, errorText } from "@/components/styles";
 import { deleteEmptyWorkout } from "./actions";
 
-export function DeleteEmptyWorkoutButton({ workoutId, redirectTo }: { workoutId: string; redirectTo?: string }) {
+export function DeleteEmptyWorkoutButton({
+  workoutId,
+  redirectTo,
+  text = "Delete",
+}: {
+  workoutId: string;
+  redirectTo?: string;
+  text?: string;
+}) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -21,12 +30,12 @@ export function DeleteEmptyWorkoutButton({ workoutId, redirectTo }: { workoutId:
             else if (redirectTo) router.push(redirectTo);
           })
         }
-        className="rounded-lg px-3 py-1 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950"
+        className={`${danger} whitespace-nowrap px-2`}
       >
-        {pending ? "Deleting…" : "Delete empty workout"}
+        {pending ? "Deleting…" : text}
       </button>
       {error && (
-        <span role="alert" className="text-xs text-red-600">
+        <span role="alert" className={`${errorText} text-xs`}>
           {error}
         </span>
       )}

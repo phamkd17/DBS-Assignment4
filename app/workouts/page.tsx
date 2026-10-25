@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
-import { AppHeader, WgerCredit } from "@/components/AppHeader";
+import { AppHeader, SectionLabel, WgerCredit } from "@/components/AppHeader";
+import { card, errorText, quiet } from "@/components/styles";
 import { createSupabase } from "@/lib/supabase";
 import {
   StartFromTemplateButton,
@@ -14,31 +15,30 @@ export default function WorkoutsPage() {
   return (
     <>
       <AppHeader />
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
+      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-10 px-4 py-8">
         <section>
-          <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-              Start a workout
-            </h2>
-            <Link href="/templates" className="text-sm text-zinc-500 underline">
-              Manage templates
-            </Link>
-          </div>
+          <SectionLabel
+            action={
+              <Link href="/templates" className={quiet}>
+                Edit templates
+              </Link>
+            }
+          >
+            01 · Start a workout
+          </SectionLabel>
           <Suspense
-            fallback={<p className="text-zinc-500">Loading your templates…</p>}
+            fallback={<p className="text-ls-muted">Loading your templates…</p>}
           >
             <TemplateButtons />
           </Suspense>
-          <div className="mt-3">
+          <div className="mt-4">
             <StartWorkoutButton />
           </div>
         </section>
         <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-            History
-          </h2>
+          <SectionLabel>02 · History</SectionLabel>
           <Suspense
-            fallback={<p className="text-zinc-500">Loading your workouts…</p>}
+            fallback={<p className="text-ls-muted">Loading your workouts…</p>}
           >
             <WorkoutHistory />
           </Suspense>
@@ -68,30 +68,31 @@ async function TemplateButtons() {
   if (error) {
     console.error("Loading templates failed:", error);
     return (
-      <p className="text-red-600">
+      <p className={errorText}>
         Couldn&apos;t load your templates. Refresh to try again.
       </p>
     );
   }
   if (!templates.length) {
     return (
-      <p className="text-zinc-500">
-        No templates. Save one from any workout with &ldquo;Save as
-        template&rdquo;.
+      <p className="text-ls-muted">
+        No templates yet. Save one from any workout with &ldquo;Save these
+        exercises as a template&rdquo;.
       </p>
     );
   }
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <ul className={`divide-y divide-ls-border ${card}`}>
       {templates.map((t) => (
-        <StartFromTemplateButton
-          key={t.id}
-          templateId={t.id}
-          name={t.name}
-          count={(t.exercises as unknown[]).length}
-        />
+        <li key={t.id}>
+          <StartFromTemplateButton
+            templateId={t.id}
+            name={t.name}
+            exercises={(t.exercises as { name: string }[]).map((e) => e.name)}
+          />
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
 
@@ -108,20 +109,20 @@ async function WorkoutHistory() {
   if (error) console.error("Loading workouts failed:", error);
   if (error)
     return (
-      <p className="text-red-600">
+      <p className={errorText}>
         Couldn&apos;t load your workouts. Refresh to try again.
       </p>
     );
   if (!workouts.length) {
     return (
-      <p className="rounded-xl border border-dashed border-zinc-300 p-6 text-center text-zinc-500 dark:border-zinc-700">
+      <p className="border border-dashed border-ls-border p-6 text-center text-ls-muted">
         No workouts yet. Start one above and your history will show up here.
       </p>
     );
   }
 
   return (
-    <ul className="divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+    <ul className={`divide-y divide-ls-border ${card}`}>
       {workouts.map((w) => {
         const sets = (w.workout_sets as { count: number }[])[0]?.count ?? 0;
         return (
@@ -131,15 +132,17 @@ async function WorkoutHistory() {
           >
             <Link
               href={`/workouts/${w.id}`}
-              className="flex flex-1 items-center justify-between px-4 py-3"
+              className="flex flex-1 items-center justify-between px-4 py-3 transition-colors hover:bg-ls-ink/[0.04] focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-[-2px] focus-visible:outline-ls-ink"
             >
               <span>
-                <span className="font-medium">{w.name}</span>
-                <span className="block text-sm text-zinc-500">
+                <span className="font-ls-serif text-[22px] leading-tight">
+                  {w.name}
+                </span>
+                <span className="block text-sm text-ls-muted">
                   {dateLabel(w.performed_on)}
                 </span>
               </span>
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-ls-muted tabular-nums">
                 {sets === 0
                   ? "Empty"
                   : `${sets} ${sets === 1 ? "set" : "sets"}`}
