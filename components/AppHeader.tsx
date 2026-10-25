@@ -2,6 +2,9 @@ import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import { focusRing, label } from "./styles";
 
+// Tighter letter-spacing on phones so the three links and the account button fit at 390px.
+const navLink = `${label} tracking-[0.12em] sm:tracking-[0.22em]`;
+
 export function AppHeader() {
   return (
     <header className="border-b border-ls-ink bg-ls-bg">
@@ -12,16 +15,22 @@ export function AppHeader() {
         >
           Lift Log
         </Link>
-        <nav className="flex items-center gap-5">
+        <nav className="flex items-center gap-3 sm:gap-5">
           <Link
             href="/workouts"
-            className={`${label} hover:text-ls-ink ${focusRing}`}
+            className={`${navLink} hover:text-ls-ink ${focusRing}`}
           >
             Workouts
           </Link>
           <Link
+            href="/week"
+            className={`${navLink} hover:text-ls-ink ${focusRing}`}
+          >
+            Week
+          </Link>
+          <Link
             href="/templates"
-            className={`${label} hover:text-ls-ink ${focusRing}`}
+            className={`${navLink} hover:text-ls-ink ${focusRing}`}
           >
             Templates
           </Link>
