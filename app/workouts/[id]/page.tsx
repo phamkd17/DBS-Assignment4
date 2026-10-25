@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { AppHeader, WgerCredit } from "@/components/AppHeader";
+import { card, label, quiet } from "@/components/styles";
 import { createSupabase } from "@/lib/supabase";
 import { getCatalog } from "@/lib/wger";
 import type { LoggedSet, PlannedExercise } from "@/lib/types";
@@ -16,11 +17,11 @@ export default function WorkoutPage({ params }: PageProps<"/workouts/[id]">) {
   return (
     <>
       <AppHeader />
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 py-6">
-        <Link href="/workouts" className="text-sm text-zinc-500">
+      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-5 px-4 py-8">
+        <Link href="/workouts" className={`${quiet} w-fit`}>
           ← All workouts
         </Link>
-        <Suspense fallback={<p className="text-zinc-500">Loading workout…</p>}>
+        <Suspense fallback={<p className="text-ls-muted">Loading workout…</p>}>
           <Workout params={params} />
         </Suspense>
       </main>
@@ -100,10 +101,9 @@ async function Workout({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3 border-b border-ls-ink pb-4">
         <div>
-          <h1 className="text-2xl font-semibold">{workout.name}</h1>
-          <p className="text-zinc-500">
+          <p className={label}>
             {new Date(`${workout.performed_on}T12:00:00`).toLocaleDateString(
               "en-US",
               {
@@ -113,30 +113,31 @@ async function Workout({ params }: { params: Promise<{ id: string }> }) {
               },
             )}
           </p>
+          <h1 className="mt-2 font-ls-serif text-[44px] leading-[1.05]">
+            {workout.name}
+          </h1>
         </div>
         {!sets?.length && (
           <DeleteEmptyWorkoutButton
             workoutId={workout.id}
             redirectTo="/workouts"
+            text="Delete empty workout"
           />
         )}
       </div>
 
       {planned.length === 0 && (
-        <p className="rounded-xl border border-dashed border-zinc-300 p-6 text-center text-zinc-500 dark:border-zinc-700">
+        <p className="border border-dashed border-ls-border p-6 text-center text-ls-muted">
           No exercises yet. Add your first one below.
         </p>
       )}
 
-      {planned.map((exercise) => {
+      {planned.map((exercise, index) => {
         const done = setsByExercise.get(exercise.exercise_id) ?? [];
         const last = lastTime.get(exercise.exercise_id);
         const prefill = done.at(-1) ?? last?.sets.at(-1);
         return (
-          <section
-            key={exercise.exercise_id}
-            className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
-          >
+          <section key={exercise.exercise_id} className={`${card} p-4`}>
             <div className="flex items-start gap-3">
               <ZoomableThumb
                 name={exercise.name}
@@ -144,16 +145,31 @@ async function Workout({ params }: { params: Promise<{ id: string }> }) {
                 image={exercise.image ?? null}
               />
               <div className="min-w-0 flex-1">
-                <div className="flex items-baseline justify-between gap-3">
-                  <h2 className="text-lg font-semibold">{exercise.name}</h2>
-                  <span className="shrink-0 text-xs uppercase tracking-wide text-zinc-500">
-                    {exercise.category}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  {last
-                    ? `Last time (${new Date(`${last.date}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" })}): ${last.sets.map(fmt).join(", ")}`
-                    : "First time logging this exercise"}
+                <p className={label}>
+                  {String(index + 1).padStart(2, "0")} · {exercise.category}
+                </p>
+                <h2 className="mt-1 font-ls-serif text-[26px] leading-tight">
+                  {exercise.name}
+                </h2>
+                <p className="mt-1 text-sm text-ls-muted">
+                  {last ? (
+                    <>
+                      Last time,{" "}
+                      {new Date(`${last.date}T12:00:00`).toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "short",
+                          day: "numeric",
+                        },
+                      )}
+                      :{" "}
+                      <span className="text-ls-ink tabular-nums">
+                        {last.sets.map(fmt).join(", ")}
+                      </span>
+                    </>
+                  ) : (
+                    "First time logging this exercise"
+                  )}
                 </p>
               </div>
             </div>
@@ -167,22 +183,24 @@ async function Workout({ params }: { params: Promise<{ id: string }> }) {
             )}
 
             {done.length > 0 && (
-              <ol className="mt-3 space-y-1">
+              <ol className="mt-4 divide-y divide-ls-border border-y border-ls-border">
                 {done.map((s, i) => (
                   <li
                     key={s.id}
-                    className="flex items-center justify-between rounded-lg bg-zinc-100 px-3 py-2 dark:bg-zinc-900"
+                    className="flex items-center justify-between py-2"
                   >
-                    <span>
-                      <span className="mr-3 text-sm text-zinc-500">
-                        Set {i + 1}
+                    <span className="flex items-baseline gap-4 tabular-nums">
+                      <span className="w-6 font-ls-serif text-xl text-ls-muted">
+                        {i + 1}
                       </span>
-                      <span className="font-medium">
+                      <span className="text-[17px] font-medium">
                         {s.weight_lb === null
                           ? "Bodyweight"
                           : `${Number(s.weight_lb)} lb`}
                       </span>
-                      <span className="text-zinc-500"> × {s.reps}</span>
+                      <span className="text-[17px] text-ls-muted">
+                        × {s.reps}
+                      </span>
                     </span>
                     <DeleteSetButton setId={s.id} />
                   </li>
@@ -201,7 +219,7 @@ async function Workout({ params }: { params: Promise<{ id: string }> }) {
       })}
 
       <Suspense
-        fallback={<p className="text-zinc-500">Loading exercise library…</p>}
+        fallback={<p className="text-ls-muted">Loading exercise library…</p>}
       >
         <ExerciseLibrary workoutId={workout.id} alreadyAdded={exerciseIds} />
       </Suspense>
@@ -225,7 +243,10 @@ async function ExerciseLibrary({
     catalog = await getCatalog();
   } catch {
     return (
-      <p className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+      <p
+        role="status"
+        className="border border-ls-error bg-ls-surface p-4 text-[15px] leading-relaxed text-ls-error"
+      >
         The exercise library (wger) is unavailable right now, so you can&apos;t
         add new exercises. You can still log sets for the exercises above.
         Refresh in a minute to try again.

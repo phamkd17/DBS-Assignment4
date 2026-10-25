@@ -1,5 +1,14 @@
 "use client";
 
+import {
+  card,
+  errorText,
+  input,
+  label,
+  primary,
+  quiet,
+  secondary,
+} from "@/components/styles";
 import { useActionState, useState, useTransition } from "react";
 import {
   removeExercise,
@@ -27,12 +36,12 @@ export function RemoveExerciseButton({
             setError(result.error ?? null);
           })
         }
-        className="text-sm text-zinc-500 hover:text-red-600 disabled:opacity-50"
+        className={quiet}
       >
         {pending ? "Removing…" : "Remove"}
       </button>
       {error && (
-        <span role="alert" className="text-xs text-red-600">
+        <span role="alert" className={`${errorText} text-xs`}>
           {error}
         </span>
       )}
@@ -61,26 +70,20 @@ export function SaveAsTemplate({
     return (
       <div className="flex flex-col items-center gap-1">
         {state.savedName && (
-          <p className="text-sm text-green-700 dark:text-green-400">
+          <p role="status" className="text-sm text-ls-success">
             Saved as template &ldquo;{state.savedName}&rdquo;.
           </p>
         )}
-        <button
-          onClick={() => setOpenedAt(Date.now())}
-          className="text-sm text-zinc-500 underline"
-        >
+        <button onClick={() => setOpenedAt(Date.now())} className={quiet}>
           Save these exercises as a template
         </button>
       </div>
     );
   }
   return (
-    <form
-      action={formAction}
-      className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
-    >
+    <form action={formAction} className={`${card} p-4`}>
       <input type="hidden" name="workout_id" value={workoutId} />
-      <label className="text-sm text-zinc-500">
+      <label className={label}>
         Template name
         <input
           name="name"
@@ -89,26 +92,23 @@ export function SaveAsTemplate({
           required
           maxLength={80}
           autoFocus
-          className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
+          className={`${input} mt-1 normal-case tracking-normal`}
         />
       </label>
       <div className="mt-3 flex gap-2">
         <button
           type="button"
           onClick={() => setOpenedAt(null)}
-          className="flex-1 rounded-lg border border-zinc-300 py-2 dark:border-zinc-700"
+          className={`${secondary} flex-1`}
         >
           Cancel
         </button>
-        <button
-          disabled={pending}
-          className="flex-1 rounded-lg bg-zinc-900 py-2 font-semibold text-white disabled:opacity-60 dark:bg-white dark:text-zinc-900"
-        >
+        <button disabled={pending} className={`${primary} flex-1`}>
           {pending ? "Saving…" : "Save template"}
         </button>
       </div>
       {state.error && (
-        <p role="alert" className="mt-2 text-sm text-red-600">
+        <p role="alert" className={`${errorText} mt-2`}>
           {state.error}
         </p>
       )}

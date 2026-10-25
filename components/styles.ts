@@ -5,7 +5,8 @@
 export const focusRing =
   "focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ls-ink";
 
-export const label = "font-ls-sans text-[11px] font-medium uppercase tracking-[0.22em] text-ls-muted";
+export const label =
+  "font-ls-sans text-[11px] font-medium uppercase tracking-[0.22em] text-ls-muted";
 
 const buttonBase = `inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap px-6 font-ls-sans text-xs font-medium uppercase tracking-[0.18em] transition-colors duration-150 select-none cursor-pointer ${focusRing}`;
 

@@ -1,5 +1,16 @@
 "use client";
 
+import {
+  card,
+  chip,
+  errorText,
+  focusRing,
+  input,
+  label,
+  primary,
+  quiet,
+  secondary,
+} from "@/components/styles";
 import { useMemo, useState, useTransition } from "react";
 import { addExercise } from "../actions";
 import { rankByName } from "@/lib/search";
@@ -48,7 +59,7 @@ export function ExercisePicker({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="rounded-xl border-2 border-dashed border-zinc-300 px-4 py-4 font-semibold text-zinc-600 dark:border-zinc-700 dark:text-zinc-300"
+        className={`${secondary} w-full border-dashed`}
       >
         + Add exercise
       </button>
@@ -69,13 +80,12 @@ export function ExercisePicker({
   }
 
   return (
-    <section className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold">Add exercise</h2>
-        <button
-          onClick={() => setOpen(false)}
-          className="text-sm text-zinc-500"
-        >
+    <section className={`${card} p-4`}>
+      <div className="flex items-baseline justify-between">
+        <h2 className="font-ls-serif text-[26px] leading-tight">
+          Add exercise
+        </h2>
+        <button onClick={() => setOpen(false)} className={quiet}>
           Cancel
         </button>
       </div>
@@ -85,7 +95,7 @@ export function ExercisePicker({
         placeholder="Search, e.g. bench press"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="mt-3 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-950"
+        className={`${input} mt-3`}
       />
       <div className="mt-3 flex flex-wrap gap-2">
         {CATEGORIES.map((c) => (
@@ -93,29 +103,25 @@ export function ExercisePicker({
             key={c}
             onClick={() => setCategory(category === c ? null : c)}
             aria-pressed={category === c}
-            className={`rounded-full border px-3 py-1 text-sm ${
-              category === c
-                ? "border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900"
-                : "border-zinc-300 dark:border-zinc-700"
-            }`}
+            className={chip}
           >
             {c}
           </button>
         ))}
       </div>
       {error && (
-        <p role="alert" className="mt-3 text-sm text-red-600">
+        <p role="alert" className={`${errorText} mt-3`}>
           {error}
         </p>
       )}
       {matches.length === 0 ? (
-        <p className="mt-4 text-center text-zinc-500">
+        <p className="mt-4 text-center text-ls-muted">
           No exercises match{query && <> &ldquo;{query}&rdquo;</>}
           {category && <> in {category}</>}. Try a shorter word or another
           category.
         </p>
       ) : (
-        <ul className="mt-3 max-h-80 divide-y divide-zinc-100 overflow-y-auto dark:divide-zinc-900">
+        <ul className="mt-4 max-h-96 divide-y divide-ls-border overflow-y-auto border-y border-ls-border">
           {matches.map((o) => (
             <li key={o.id} className="flex items-center gap-3 px-1 py-2">
               {/* The picture opens a bigger preview; the name adds the exercise. */}
@@ -142,12 +148,10 @@ export function ExercisePicker({
               <button
                 disabled={pending}
                 onClick={() => pick(o.id)}
-                className="flex flex-1 items-center justify-between gap-3 text-left disabled:opacity-50"
+                className={`flex flex-1 cursor-pointer items-center justify-between gap-3 self-stretch text-left text-[15px] transition-colors hover:text-ls-accent disabled:opacity-50 ${focusRing}`}
               >
                 <span>{o.name}</span>
-                <span className="shrink-0 text-xs text-zinc-500">
-                  {o.category}
-                </span>
+                <span className={`${label} shrink-0`}>{o.category}</span>
               </button>
             </li>
           ))}
@@ -162,7 +166,7 @@ export function ExercisePicker({
           <button
             disabled={pending}
             onClick={() => pick(preview.id)}
-            className="flex-1 rounded-lg bg-zinc-900 px-4 py-3 font-semibold text-white disabled:opacity-60 dark:bg-white dark:text-zinc-900"
+            className={`${primary} flex-1`}
           >
             {pending ? "Adding…" : "Add to workout"}
           </button>

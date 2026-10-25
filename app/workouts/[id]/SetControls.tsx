@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  errorText,
+  focusRing,
+  input,
+  label,
+  primary,
+} from "@/components/styles";
 import { useActionState, useState, useTransition } from "react";
 import { addSet, deleteSet, type SetFormState } from "../actions";
 
@@ -9,19 +16,24 @@ export function AddSetForm(props: {
   defaultWeight: number | null;
   defaultReps: number | null;
 }) {
-  const [state, formAction, pending] = useActionState<SetFormState, FormData>(addSet, {});
+  const [state, formAction, pending] = useActionState<SetFormState, FormData>(
+    addSet,
+    {},
+  );
   // Controlled inputs keep the numbers after saving, since the next set is usually the same weight.
-  const [weight, setWeight] = useState(props.defaultWeight === null ? "" : String(Number(props.defaultWeight)));
-  const [reps, setReps] = useState(props.defaultReps === null ? "" : String(props.defaultReps));
-  const input =
-    "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-lg dark:border-zinc-700 dark:bg-zinc-950";
+  const [weight, setWeight] = useState(
+    props.defaultWeight === null ? "" : String(Number(props.defaultWeight)),
+  );
+  const [reps, setReps] = useState(
+    props.defaultReps === null ? "" : String(props.defaultReps),
+  );
 
   return (
-    <form action={formAction} className="mt-3">
+    <form action={formAction} className="mt-4">
       <input type="hidden" name="workout_id" value={props.workoutId} />
       <input type="hidden" name="exercise_id" value={props.exerciseId} />
       <div className="flex items-end gap-2">
-        <label className="flex-1 text-xs text-zinc-500">
+        <label className={`${label} flex-1`}>
           Weight (lb)
           <input
             name="weight_lb"
@@ -29,10 +41,10 @@ export function AddSetForm(props: {
             placeholder="Bodyweight"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
-            className={input}
+            className={`${input} mt-1 text-lg tabular-nums`}
           />
         </label>
-        <label className="w-24 text-xs text-zinc-500">
+        <label className={`${label} w-24`}>
           Reps
           <input
             name="reps"
@@ -40,18 +52,15 @@ export function AddSetForm(props: {
             required
             value={reps}
             onChange={(e) => setReps(e.target.value)}
-            className={input}
+            className={`${input} mt-1 text-lg tabular-nums`}
           />
         </label>
-        <button
-          disabled={pending}
-          className="h-[46px] rounded-lg bg-zinc-900 px-4 font-semibold text-white disabled:opacity-60 dark:bg-white dark:text-zinc-900"
-        >
+        <button disabled={pending} className={`${primary} px-5`}>
           {pending ? "Saving…" : "+ Set"}
         </button>
       </div>
       {state.error && (
-        <p role="alert" className="mt-2 text-sm text-red-600">
+        <p role="alert" className={`${errorText} mt-2`}>
           {state.error}
         </p>
       )}
@@ -67,7 +76,7 @@ export function DeleteSetButton({ setId }: { setId: string }) {
       aria-label="Delete set"
       disabled={pending}
       onClick={() => startTransition(() => deleteSet(setId))}
-      className="px-2 text-zinc-400 hover:text-red-600 disabled:opacity-50"
+      className={`grid size-9 cursor-pointer place-items-center text-ls-muted transition-colors hover:bg-ls-ink/[0.06] hover:text-ls-error disabled:opacity-50 ${focusRing}`}
     >
       ✕
     </button>

@@ -1,18 +1,18 @@
 "use client";
 
+import { focusRing, label, secondary } from "./styles";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 type ImageProps = { name: string; category: string; image: string | null };
 
 // About a third of wger exercises have a picture. The rest get a same-sized placeholder so names stay aligned.
 export function ExerciseThumb({ name, category, image }: ImageProps) {
-  const box =
-    "size-12 shrink-0 rounded-lg border border-zinc-200 bg-white dark:border-zinc-800";
+  const box = "size-14 shrink-0 border border-ls-border bg-white";
   if (!image) {
     return (
       <span
         aria-hidden
-        className={`${box} flex items-center justify-center text-lg font-semibold text-zinc-400 dark:bg-zinc-900`}
+        className={`${box} flex items-center justify-center bg-ls-bg font-ls-serif text-2xl text-ls-muted`}
       >
         {category[0]}
       </span>
@@ -50,24 +50,21 @@ export function ImagePreview({
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
       aria-label={name}
-      className="m-auto w-[min(92vw,28rem)] rounded-2xl bg-white p-0 text-zinc-900 backdrop:bg-black/60 dark:bg-zinc-950 dark:text-zinc-100"
+      className="m-auto w-[min(92vw,28rem)] border border-ls-ink bg-ls-surface p-0 text-ls-ink"
     >
       <div className="flex flex-col gap-4 p-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={image}
           alt={name}
-          className="max-h-[60vh] w-full rounded-xl bg-white object-contain"
+          className="max-h-[60vh] w-full border border-ls-border bg-white object-contain"
         />
         <div>
-          <h3 className="text-lg font-semibold">{name}</h3>
-          <p className="text-sm text-zinc-500">{category}</p>
+          <h3 className="font-ls-serif text-[28px] leading-tight">{name}</h3>
+          <p className={label}>{category}</p>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={onClose}
-            className="flex-1 rounded-lg border border-zinc-300 px-4 py-3 font-medium dark:border-zinc-700"
-          >
+          <button onClick={onClose} className={`${secondary} flex-1`}>
             Back
           </button>
           {children}
@@ -87,7 +84,7 @@ export function ZoomableThumb(props: ImageProps) {
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`Show a bigger picture of ${props.name}`}
-        className="shrink-0"
+        className={`shrink-0 cursor-zoom-in ${focusRing}`}
       >
         <ExerciseThumb {...props} />
       </button>
