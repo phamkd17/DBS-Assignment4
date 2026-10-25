@@ -7,8 +7,10 @@ import { createSupabase } from "@/lib/supabase";
 import { balanceNotes, type WeekSet } from "@/lib/volume";
 import { addDays, resolveWeek, weekLabel } from "@/lib/week";
 import { VolumeChart } from "./VolumeChart";
+import { ExerciseList } from "./ExerciseList";
+import { buildProgress, type ProgressSet } from "@/lib/progress";
 
-export default function WeekPage({ searchParams }: PageProps<"/progress">) {
+export default function ProgressPage({ searchParams }: PageProps<"/progress">) {
   return (
     <>
       <AppHeader />
@@ -18,6 +20,14 @@ export default function WeekPage({ searchParams }: PageProps<"/progress">) {
         >
           <Week searchParams={searchParams} />
         </Suspense>
+        <section className="mt-4">
+          <SectionLabel>Every exercise · heaviest set per session</SectionLabel>
+          <Suspense
+            fallback={<p className="text-ls-muted">Loading your exercises…</p>}
+          >
+            <AllExercises />
+          </Suspense>
+        </section>
       </main>
       <WgerCredit />
     </>
@@ -62,7 +72,10 @@ async function Week({
           {isCurrent ? (
             <span className="w-[4.5rem]" />
           ) : (
-            <Link href={`/progress?week=${addDays(start, 7)}`} className={quiet}>
+            <Link
+              href={`/progress?week=${addDays(start, 7)}`}
+              className={quiet}
+            >
               Next →
             </Link>
           )}
@@ -71,8 +84,7 @@ async function Week({
           {isCurrent ? "This week" : "That week"}
         </h1>
         <p className="mt-1 text-[15px] text-ls-muted">
-          {total} {total === 1 ? "set" : "sets"} across all muscle
-          groups
+          {total} {total === 1 ? "set" : "sets"} across all muscle groups
         </p>
       </div>
 
@@ -128,4 +140,29 @@ async function Week({
       )}
     </>
   );
+}
+
+async function AllExercises() {
+  await auth.protect();
+  const supabase = await createSupabase();
+  const { data, error } = await supabase
+    .from("workout_sets")
+    .select(
+      "exercise_id, exercise_name, category, workout_id, weight_lb, reps, workouts!inner(performed_on)",
+    )
+    .limit(5000);
+  if (error) {
+    console.error("Loading exercise progress failed:", error);
+    return (
+      <p className={errorText}>
+        Couldn&apos;t load your exercises. Refresh to try again.
+      </p>
+    );
+  }
+  const rows: ProgressSet[] = data.map((s) => ({
+    ...s,
+    performed_on: (s.workouts as unknown as { performed_on: string })
+      .performed_on,
+  }));
+  return <ExerciseList exercises={buildProgress(rows)} />;
 }
