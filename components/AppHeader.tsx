@@ -3,19 +3,19 @@ import { UserButton } from "@clerk/nextjs";
 import { focusRing, label } from "./styles";
 
 // Tighter letter-spacing on phones so the three links and the account button fit at 390px.
-const navLink = `${label} tracking-[0.12em] sm:tracking-[0.22em]`;
+const navLink = `${label} text-[10px] tracking-[0.1em] sm:text-[11px] sm:tracking-[0.22em]`;
 
 export function AppHeader() {
   return (
     <header className="border-b border-ls-ink bg-ls-bg">
-      <div className="mx-auto flex w-full max-w-xl items-center justify-between px-4 py-3">
+      <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-4 px-4 py-3">
         <Link
           href="/workouts"
-          className={`font-ls-serif text-[26px] leading-none ${focusRing}`}
+          className={`shrink-0 whitespace-nowrap font-ls-serif text-[22px] leading-none sm:text-[26px] ${focusRing}`}
         >
           Lift Log
         </Link>
-        <nav className="flex items-center gap-3 sm:gap-5">
+        <nav className="flex items-center gap-2.5 sm:gap-5">
           <Link
             href="/workouts"
             className={`${navLink} hover:text-ls-ink ${focusRing}`}
@@ -23,14 +23,15 @@ export function AppHeader() {
             Workouts
           </Link>
           <Link
-            href="/week"
+            href="/progress"
             className={`${navLink} hover:text-ls-ink ${focusRing}`}
           >
-            Week
+            Progress
           </Link>
           <Link
             href="/templates"
-            className={`${navLink} hover:text-ls-ink ${focusRing}`}
+            // Hidden on the narrowest phones; "Edit templates" on the Workouts page still links here.
+            className={`${navLink} hover:text-ls-ink max-[379px]:hidden ${focusRing}`}
           >
             Templates
           </Link>

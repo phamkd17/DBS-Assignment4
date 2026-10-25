@@ -8,7 +8,7 @@ import { balanceNotes, type WeekSet } from "@/lib/volume";
 import { addDays, resolveWeek, weekLabel } from "@/lib/week";
 import { VolumeChart } from "./VolumeChart";
 
-export default function WeekPage({ searchParams }: PageProps<"/week">) {
+export default function WeekPage({ searchParams }: PageProps<"/progress">) {
   return (
     <>
       <AppHeader />
@@ -55,14 +55,14 @@ async function Week({
           className="flex items-center justify-between"
           aria-label="Choose week"
         >
-          <Link href={`/week?week=${addDays(start, -7)}`} className={quiet}>
+          <Link href={`/progress?week=${addDays(start, -7)}`} className={quiet}>
             ← Previous
           </Link>
           <p className={label}>{weekLabel(start, end)}</p>
           {isCurrent ? (
             <span className="w-[4.5rem]" />
           ) : (
-            <Link href={`/week?week=${addDays(start, 7)}`} className={quiet}>
+            <Link href={`/progress?week=${addDays(start, 7)}`} className={quiet}>
               Next →
             </Link>
           )}
