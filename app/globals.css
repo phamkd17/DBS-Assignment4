@@ -1,26 +1,34 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Line & Stone, carried over from Assignment 2 (DBS-Assignment2/app/globals.css).
+   Square corners, 1px ink hairlines, no shadows. Aegean blue is reserved for the primary action. */
+@theme {
+  --color-ls-bg: #ece7dc; /* Limestone */
+  --color-ls-surface: #f8f6f1; /* Plaster */
+  --color-ls-ink: #1c1d1f; /* text, control lines, selected */
+  --color-ls-muted: #5e656e; /* Slate */
+  --color-ls-border: #8a8377; /* deep Stone: dividers, card edges */
+  --color-ls-rule: #a8a196; /* Stone: decorative rules only */
+  --color-ls-accent: #23449a; /* Aegean: primary action only */
+  --color-ls-accent-hover: #1b367d;
+  --color-ls-accent-pressed: #142a61;
+  --color-ls-error: #9a4a31; /* deep Terracotta */
+  --color-ls-success: #3e6b45; /* Cypress */
+  --color-ls-disabled: #ddd8ce;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-ls-serif: var(--font-instrument-serif);
+  --font-ls-sans: var(--font-jost);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-ls-bg);
+  color: var(--color-ls-ink);
+  font-family: var(--font-jost), system-ui, sans-serif;
+}
+
+/* A native <dialog>'s dimmed page behind it. */
+dialog::backdrop {
+  background: color-mix(in srgb, var(--color-ls-ink) 55%, transparent);
 }
