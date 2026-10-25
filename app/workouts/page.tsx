@@ -3,7 +3,11 @@ import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { AppHeader, WgerCredit } from "@/components/AppHeader";
 import { createSupabase } from "@/lib/supabase";
-import { StartWorkoutButton } from "./StartWorkoutButton";
+import {
+  StartFromTemplateButton,
+  StartWorkoutButton,
+} from "./StartWorkoutButton";
+import { ensureStarterTemplates } from "@/lib/templates";
 import { DeleteEmptyWorkoutButton } from "./DeleteEmptyWorkoutButton";
 
 export default function WorkoutsPage() {
@@ -11,7 +15,24 @@ export default function WorkoutsPage() {
     <>
       <AppHeader />
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6">
-        <StartWorkoutButton />
+        <section>
+          <div className="mb-3 flex items-baseline justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+              Start a workout
+            </h2>
+            <Link href="/templates" className="text-sm text-zinc-500 underline">
+              Manage templates
+            </Link>
+          </div>
+          <Suspense
+            fallback={<p className="text-zinc-500">Loading your templates…</p>}
+          >
+            <TemplateButtons />
+          </Suspense>
+          <div className="mt-3">
+            <StartWorkoutButton />
+          </div>
+        </section>
         <section>
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500">
             History
@@ -34,6 +55,45 @@ const dateLabel = (d: string) =>
     month: "short",
     day: "numeric",
   });
+
+async function TemplateButtons() {
+  await auth.protect();
+  const supabase = await createSupabase();
+  await ensureStarterTemplates(supabase);
+  const { data: templates, error } = await supabase
+    .from("templates")
+    .select("id, name, exercises")
+    .order("created_at");
+
+  if (error) {
+    console.error("Loading templates failed:", error);
+    return (
+      <p className="text-red-600">
+        Couldn&apos;t load your templates. Refresh to try again.
+      </p>
+    );
+  }
+  if (!templates.length) {
+    return (
+      <p className="text-zinc-500">
+        No templates. Save one from any workout with &ldquo;Save as
+        template&rdquo;.
+      </p>
+    );
+  }
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {templates.map((t) => (
+        <StartFromTemplateButton
+          key={t.id}
+          templateId={t.id}
+          name={t.name}
+          count={(t.exercises as unknown[]).length}
+        />
+      ))}
+    </div>
+  );
+}
 
 async function WorkoutHistory() {
   await auth.protect();

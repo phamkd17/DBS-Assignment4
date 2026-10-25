@@ -23,7 +23,10 @@ export async function startWorkout(formData: FormData) {
   const localDate = String(formData.get("performed_on") ?? "");
   const { data, error } = await supabase
     .from("workouts")
-    .insert({ name: "Workout", ...(DATE.test(localDate) && { performed_on: localDate }) })
+    .insert({
+      name: "Workout",
+      ...(DATE.test(localDate) && { performed_on: localDate }),
+    })
     .select("id")
     .single();
   if (error) {
@@ -33,10 +36,17 @@ export async function startWorkout(formData: FormData) {
   redirect(`/workouts/${data.id}`);
 }
 
-export async function addExercise(workoutId: string, exerciseId: number): Promise<{ error?: string }> {
+export async function addExercise(
+  workoutId: string,
+  exerciseId: number,
+): Promise<{ error?: string }> {
   const supabase = await signedInClient();
 
-  const { data: workout } = await supabase.from("workouts").select("exercises").eq("id", workoutId).maybeSingle();
+  const { data: workout } = await supabase
+    .from("workouts")
+    .select("exercises")
+    .eq("id", workoutId)
+    .maybeSingle();
   if (!workout) return { error: "Workout not found." };
   const planned = workout.exercises as PlannedExercise[];
   if (planned.some((e) => e.exercise_id === exerciseId)) return {};
@@ -46,7 +56,10 @@ export async function addExercise(workoutId: string, exerciseId: number): Promis
   try {
     exercise = await getExercise(exerciseId);
   } catch {
-    return { error: "The exercise library is unavailable right now. Try again in a minute." };
+    return {
+      error:
+        "The exercise library is unavailable right now. Try again in a minute.",
+    };
   }
   if (!exercise) return { error: "That exercise is no longer in the library." };
 
@@ -71,7 +84,10 @@ export async function addExercise(workoutId: string, exerciseId: number): Promis
 
 export type SetFormState = { error?: string; savedAt?: number };
 
-export async function addSet(_prev: SetFormState, formData: FormData): Promise<SetFormState> {
+export async function addSet(
+  _prev: SetFormState,
+  formData: FormData,
+): Promise<SetFormState> {
   const supabase = await signedInClient();
 
   const workoutId = String(formData.get("workout_id"));
@@ -79,15 +95,27 @@ export async function addSet(_prev: SetFormState, formData: FormData): Promise<S
   const weightText = String(formData.get("weight_lb") ?? "").trim();
   const reps = Number(formData.get("reps"));
 
-  if (!Number.isInteger(reps) || reps < 1 || reps > 1000) return { error: "Reps must be a whole number from 1 to 1000." };
+  if (!Number.isInteger(reps) || reps < 1 || reps > 1000)
+    return { error: "Reps must be a whole number from 1 to 1000." };
   const weight = weightText === "" ? null : Number(weightText);
-  if (weight !== null && (!Number.isFinite(weight) || weight < 0 || weight > 2000)) {
-    return { error: "Weight must be between 0 and 2000 lb, or empty for bodyweight." };
+  if (
+    weight !== null &&
+    (!Number.isFinite(weight) || weight < 0 || weight > 2000)
+  ) {
+    return {
+      error: "Weight must be between 0 and 2000 lb, or empty for bodyweight.",
+    };
   }
 
   // The exercise snapshot comes from the workout's own plan, so logging a set never waits on wger.
-  const { data: workout } = await supabase.from("workouts").select("exercises").eq("id", workoutId).maybeSingle();
-  const exercise = (workout?.exercises as PlannedExercise[] | undefined)?.find((e) => e.exercise_id === exerciseId);
+  const { data: workout } = await supabase
+    .from("workouts")
+    .select("exercises")
+    .eq("id", workoutId)
+    .maybeSingle();
+  const exercise = (workout?.exercises as PlannedExercise[] | undefined)?.find(
+    (e) => e.exercise_id === exerciseId,
+  );
   if (!exercise) return { error: "Add this exercise to the workout first." };
 
   const { error } = await supabase.from("workout_sets").insert({
@@ -109,14 +137,19 @@ export async function addSet(_prev: SetFormState, formData: FormData): Promise<S
 
 export async function deleteSet(setId: string) {
   const supabase = await signedInClient();
-  const { error } = await supabase.from("workout_sets").delete().eq("id", setId);
+  const { error } = await supabase
+    .from("workout_sets")
+    .delete()
+    .eq("id", setId);
   if (error) console.error("deleteSet failed:", error);
   refresh();
 }
 
 // Only empty workouts can be deleted, so a mis-tap can never erase logged sets.
 // The check happens here on the server, not just by hiding the button.
-export async function deleteEmptyWorkout(workoutId: string): Promise<{ error?: string }> {
+export async function deleteEmptyWorkout(
+  workoutId: string,
+): Promise<{ error?: string }> {
   const supabase = await signedInClient();
   const { count, error: countError } = await supabase
     .from("workout_sets")
@@ -126,13 +159,46 @@ export async function deleteEmptyWorkout(workoutId: string): Promise<{ error?: s
     console.error("deleteEmptyWorkout count failed:", countError);
     return { error: "Could not delete the workout. Please try again." };
   }
-  if (count) return { error: "This workout has sets logged, so it can't be deleted." };
+  if (count)
+    return { error: "This workout has sets logged, so it can't be deleted." };
 
-  const { error } = await supabase.from("workouts").delete().eq("id", workoutId);
+  const { error } = await supabase
+    .from("workouts")
+    .delete()
+    .eq("id", workoutId);
   if (error) {
     console.error("deleteEmptyWorkout failed:", error);
     return { error: "Could not delete the workout. Please try again." };
   }
   refresh();
   return {};
+}
+
+export async function startFromTemplate(
+  templateId: string,
+  formData: FormData,
+) {
+  const supabase = await signedInClient();
+  const { data: template } = await supabase
+    .from("templates")
+    .select("name, exercises")
+    .eq("id", templateId)
+    .maybeSingle();
+  if (!template) throw new Error("That template no longer exists.");
+
+  const localDate = String(formData.get("performed_on") ?? "");
+  const { data, error } = await supabase
+    .from("workouts")
+    .insert({
+      name: template.name,
+      exercises: template.exercises,
+      ...(DATE.test(localDate) && { performed_on: localDate }),
+    })
+    .select("id")
+    .single();
+  if (error) {
+    console.error("startFromTemplate failed:", error);
+    throw new Error("Could not start the workout. Please try again.");
+  }
+  redirect(`/workouts/${data.id}`);
 }
