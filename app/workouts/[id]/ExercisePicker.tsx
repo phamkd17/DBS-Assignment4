@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { addExercise } from "../actions";
+import { rankByName } from "@/lib/search";
 
 type Option = { id: number; name: string; category: string };
 
@@ -15,10 +16,8 @@ export function ExercisePicker({ workoutId, options }: { workoutId: string; opti
   const [pending, startTransition] = useTransition();
 
   const matches = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return options
-      .filter((o) => (!category || o.category === category) && (!q || o.name.toLowerCase().includes(q)))
-      .slice(0, 40);
+    const inCategory = category ? options.filter((o) => o.category === category) : options;
+    return rankByName(inCategory, query).slice(0, 40);
   }, [options, query, category]);
 
   if (!open) {

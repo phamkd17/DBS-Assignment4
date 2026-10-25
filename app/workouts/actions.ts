@@ -112,3 +112,26 @@ export async function deleteSet(setId: string) {
   if (error) console.error("deleteSet failed:", error);
   refresh();
 }
+
+// Only empty workouts can be deleted, so a mis-tap can never erase logged sets.
+// The check happens here on the server, not just by hiding the button.
+export async function deleteEmptyWorkout(workoutId: string): Promise<{ error?: string }> {
+  const supabase = await signedInClient();
+  const { count, error: countError } = await supabase
+    .from("workout_sets")
+    .select("id", { count: "exact", head: true })
+    .eq("workout_id", workoutId);
+  if (countError) {
+    console.error("deleteEmptyWorkout count failed:", countError);
+    return { error: "Could not delete the workout. Please try again." };
+  }
+  if (count) return { error: "This workout has sets logged, so it can't be deleted." };
+
+  const { error } = await supabase.from("workouts").delete().eq("id", workoutId);
+  if (error) {
+    console.error("deleteEmptyWorkout failed:", error);
+    return { error: "Could not delete the workout. Please try again." };
+  }
+  refresh();
+  return {};
+}
