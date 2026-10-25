@@ -91,7 +91,8 @@ No warm-up flag and no RPE: every logged set counts toward weekly volume.
 |---|---|
 | Log a workout | insert `workouts` + `workout_sets` |
 | "Last time" for an exercise | user's latest `workout_sets` with that `exercise_id` |
-| Weekly volume | count this week's (Mon–Sun) `workout_sets` by `category`; tap a category to count by `muscles` |
+| Weekly volume (`/progress`) | count the week's (Mon–Sun, Chicago, by `workouts.performed_on`) `workout_sets` by `category`; tap a category to count by `muscles`; balance notes in `lib/volume.ts` |
+| Exercise trends (`/progress`, `/progress/[exerciseId]`) | heaviest set per session (most reps if bodyweight-only), same-day sessions ordered by `created_at`; logic in `lib/progress.ts` |
 | Start a template | read `templates`, create a `workouts` row with its name and exercises |
 | Starter templates | `lib/starters.ts` (Push Day, Pull Day, Leg Day, Upper Body, Lower Body), copied into `templates` once per user (claimed via `user_settings.starters_added`), then editable on `/templates` |
 | Surprise me | wger `exerciseinfo` filtered by category and the user's `equipment_ids`, pick one at random |
